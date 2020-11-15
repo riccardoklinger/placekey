@@ -8,7 +8,7 @@
                               -------------------
         begin                : 2020-11-12
         git sha              : $Format:%H$
-        copyright            : (C) 2020 by Safegraph
+        copyright            : (C) 2020 by Riccardo Klinger
         email                : riccardo.klinger@gmail.com
  ***************************************************************************/
 
@@ -29,6 +29,10 @@ from .resources import *
 
 # Import the code for the DockWidget
 from .placekey_dockwidget import placekeyDockWidget
+# Import for Processing
+from qgis.core import QgsApplication
+from placekey.placekeyProvider import placekeyProvider
+
 import os.path
 
 
@@ -45,6 +49,7 @@ class placekey:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+        self.provider = placekeyProvider()
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -173,6 +178,9 @@ class placekey:
             text=self.tr(u'Placekey'),
             callback=self.run,
             parent=self.iface.mainWindow())
+        
+        # init the processing
+        QgsApplication.processingRegistry().addProvider(self.provider)
 
     #--------------------------------------------------------------------------
 
@@ -205,6 +213,8 @@ class placekey:
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
         del self.toolbar
+        # remove the processing
+        QgsApplication.processingRegistry().removeProvider(self.provider)
 
     #--------------------------------------------------------------------------
 
