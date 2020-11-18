@@ -23,6 +23,7 @@
 
 from qgis.core import QgsProcessingProvider
 from .placekeyAlgorithm import addPlacekey
+from .managePlacekeys import manageKeys
 __author__ = 'Tom Chadwin'
 __date__ = '2017-04-03'
 __copyright__ = '(C) 2017 by Tom Chadwin'
@@ -85,6 +86,6 @@ class placekeyProvider(QgsProcessingProvider):
         cleared before calling this method.
         """
 
-        self.alglist = [addPlacekey()]
+        self.alglist = [addPlacekey(), manageKeys()]
         for alg in self.alglist:
             self.addAlgorithm(alg)

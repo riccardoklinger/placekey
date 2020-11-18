@@ -25,21 +25,29 @@ from collections import OrderedDict
 import traceback
 from PyQt5.QtCore import (QCoreApplication, QUrl, QVariant)
 from qgis.core import (Qgis,
+                       QgsFeature,
+                       QgsFeatureSink,
+                       QgsFields,
+                       QgsField,
                        QgsProcessing,
+                       QgsProcessingAlgorithm,
+                       QgsProcessingParameterFeatureSink,
                        QgsProject,
                        QgsMapLayer,
+                       QgsProcessingException,
                        QgsProcessingParameterFeatureSource,
                        QgsProcessingParameterRasterLayer,
                        QgsProcessingParameterNumber,
                        QgsProcessingParameterField,
                        QgsProcessingParameterString,
                        QgsProcessingParameterBoolean,
+                       QgsCoordinateReferenceSystem,
                        QgsMessageLog,
                        QgsWkbTypes,
                        QgsSettings)
 from qgis.utils import iface
-
-from qgis.core import QgsProcessingAlgorithm
+import requests
+import json
 
 class placekeyAlgorithm(QgsProcessingAlgorithm):
 
@@ -49,11 +57,11 @@ class placekeyAlgorithm(QgsProcessingAlgorithm):
     INPUT = 'INPUT'
     OUTPUT = 'OUTPUT'
     CityField = 'City Field'
-    LocationName = 'Location Name Field'
-    StreetName = 'Street Name Field'
-    HouseNumber = 'Housenumber Field'
+    LocationField = 'Location Name Field'
+    AddressField = 'Address Field'
     RegionField = 'Region Name Field'
     PostalField = 'Postal Code Field'
+    CountryField = 'ISO Country Code Field'
 
     def createInstance(self):
         return type(self)()
@@ -111,15 +119,15 @@ class addPlacekey(placekeyAlgorithm):
             QgsProcessingParameterFeatureSource(
                 self.INPUT,
                 self.tr('Input table'),
-                [QgsProcessing.TypeVector]
             )
         )
         self.addParameter(
             QgsProcessingParameterField(
-                self.LocationName,
+                self.LocationField,
                 self.tr('Location Name Field'),
                 parentLayerParameterName=self.INPUT,
-                type=QgsProcessingParameterField.String
+                defaultValue="",
+                optional=True
             )
         )
         self.addParameter(
@@ -127,31 +135,23 @@ class addPlacekey(placekeyAlgorithm):
                 self.CityField,
                 self.tr('City Name Field'),
                 parentLayerParameterName=self.INPUT,
-                type=QgsProcessingParameterField.String
+                defaultValue=""
             )
         )
         self.addParameter(
             QgsProcessingParameterField(
-                self.StreetName,
-                self.tr('Street Name Field'),
+                self.AddressField,
+                self.tr('Address Field'),
                 parentLayerParameterName=self.INPUT,
-                type=QgsProcessingParameterField.String
+                defaultValue=""
             )
         )
         self.addParameter(
             QgsProcessingParameterField(
-                self.HouseNumber,
-                self.tr('House Number Field'),
-                parentLayerParameterName=self.INPUT,
-                type=QgsProcessingParameterField.String
-            )
-        )
-        self.addParameter(
-            QgsProcessingParameterField(
-                self.ReegionField,
+                self.RegionField,
                 self.tr('Region Name Field'),
-                parentLayerParameterName=self.INPUT,    
-                type=QgsProcessingParameterField.String
+                parentLayerParameterName=self.INPUT,
+                defaultValue=""
             )
         )
         self.addParameter(
@@ -159,21 +159,198 @@ class addPlacekey(placekeyAlgorithm):
                 self.PostalField,
                 self.tr('Postal Code Field'),
                 parentLayerParameterName=self.INPUT,
-                type=QgsProcessingParameterField.String
+                defaultValue=""
             )
         )
+        self.addParameter(
+            QgsProcessingParameterField(
+                self.CountryField,
+                self.tr('ISO Country COde Field'),
+                parentLayerParameterName=self.INPUT,
+                defaultValue="",
+                optional=True
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterFeatureSink(
+                self.OUTPUT,
+                self.tr('Layer with placekeys')
+            )
+        )
+
     def loadCredFunctionAlg(self):
-        scriptDirectory = os.path.dirname(os.path.realpath(__file__))
-        # self.dlg.credentialInteraction.setText("")
         creds = {}
         try:
             s = QgsSettings()
             creds["key"] = s.value("placekey/api_key", None)
         except BaseException:
-            print("api code load failed, check QGIS global settings")
+            print("no API key found!")
         return creds
 
-    def processAlgorithm(self, parameters, context, progress):
-        """Here is where the processing itself takes place."""
-        print("test")
-        return {}
+    def valueCheck(self, string):
+        if string == "nan" or string == "NULL" or string == "0":
+            return ""
+        else:
+            return string
+
+    def addPayloadItem(self, parameters, context, feature):
+        """getting field names"""
+        locationName = self.parameterAsString(
+            parameters,
+            self.LocationField,
+            context
+        )
+        cityName = self.parameterAsString(
+            parameters,
+            self.CityField,
+            context
+        )
+        addressName = self.parameterAsString(
+            parameters,
+            self.AddressField,
+            context
+        )
+        regionName = self.parameterAsString(
+            parameters,
+            self.RegionField,
+            context
+        )
+        zipCode = self.parameterAsString(
+            parameters,
+            self.PostalField,
+            context
+        )
+        item = {
+            "query_id": str(feature.id()),
+            "street_address":self.valueCheck(str(feature[addressName])),
+            "city": self.valueCheck(str(feature[cityName])),
+            "postal_code": self.valueCheck(str(feature[zipCode])),
+            "region": self.valueCheck(str(feature[regionName])),
+            "iso_country_code": "US"
+        }
+        if locationName != "":
+            item["location_name"] = self.valueCheck(
+                str(feature[locationName]))
+        return item
+
+    def getKeys(self, payload, result, key):
+        url = "https://api.placekey.io/v1/placekeys"
+        headers = {
+            'apikey': key,
+            'Content-Type': 'application/json'
+        }
+        response = requests.request(
+            "POST",
+            url,
+            headers=headers,
+            data=json.dumps(payload)
+        )
+        for item in response.json():
+            result.append(item)
+        return result
+
+    def processAlgorithm(self, parameters, context, feedback):
+        """checking for key"""
+        key = self.loadCredFunctionAlg()["key"]
+        if key == "" or key is None:
+            feedback.reportError("no API key found!", True)
+            raise QgsProcessingException(
+                "no API key found! ")
+        """getting the input table"""
+        source = self.parameterAsSource(
+            parameters,
+            self.INPUT,
+            context
+        )
+        if (source.wkbType() == 4
+            or source.wkbType() == 1004
+                or source.wkbType() == 3004):
+            raise QgsProcessingException(
+                "MultiPoint layer are not supported!")
+        if source is None:
+            raise QgsProcessingException(
+                self.invalidSourceError(
+                    parameters, self.INPUT))
+        """predefining the output layer"""
+        fields = source.fields()
+        fields.append(QgsField("placekey", QVariant.String))
+        (sink, dest_id) = self.parameterAsSink(
+            parameters,
+            self.OUTPUT,
+            context,
+            fields,
+            QgsWkbTypes.Point,
+            QgsCoordinateReferenceSystem(4326)
+        )
+        if sink is None:
+            raise QgsProcessingException(
+                self.invalidSinkError(
+                    parameters, self.OUTPUT))
+        feedback.pushInfo(
+            '{} points for placekey finding'.format(
+                source.featureCount()))
+        total = 100.0 / source.featureCount() if source.featureCount() else 0
+        features = source.getFeatures()
+        """lining up the entries"""
+        payload = {"queries": []}
+        batches = []
+        result = []
+        
+        if source.featureCount() < 100:
+            """small mode"""
+            for current, feature in enumerate(features):
+                if feedback.isCanceled():
+                    break
+                payload["queries"].append(self.addPayloadItem(parameters, context, feature))
+            batches.append(payload)
+            result = self.getKeys(batches[0], result, key)
+        else:
+            """batch mode"""
+            index = 0
+            for current, feature in enumerate(features):
+                if feedback.isCanceled():
+                    break
+                index += 1
+                if index % 100 != 0 and index != source.featureCount():
+                    payloadItem = self.addPayloadItem(parameters, context, feature)
+                    payload["queries"].append(payloadItem)
+                if index % 100 == 0:
+                    payloadItem = self.addPayloadItem(parameters, context, feature)
+                    payload["queries"].append(payloadItem)
+                    batches.append(payload)
+                    payload = {"queries": []}
+                if index == source.featureCount():
+                    payloadItem = self.addPayloadItem(parameters, context, feature)
+                    payload["queries"].append(payloadItem)
+                    batches.append(payload)
+                    payload = {"queries": []}
+            currentBatch = 0
+            for batch in batches:
+                if feedback.isCanceled():
+                    break
+                currentBatch += 1
+                result = self.getKeys(batch, result, key) 
+                feedback.setProgress(int(currentBatch / len(batches) * 100))
+            feedback.pushInfo('gathering placekeys finished...')
+        '''processing result'''
+        features = source.getFeatures()
+        feedback.pushInfo('merging source with placekeys...')
+        for current, feature in enumerate(features):
+            if feedback.isCanceled():
+                break
+            fet = QgsFeature()
+            attributes = feature.attributes()
+            try:
+                fet.setGeometry(feature.geometry())
+            except BaseException:
+                feedback.pushInfo('no geometry available')
+            for index in range(0, len(result)):
+                if result[index]["query_id"] == str(feature.id()):
+                    placekey = result[index]["placekey"]
+                    attributes.append(placekey)
+                    result.pop(index)
+                    break
+            fet.setAttributes(attributes)
+            sink.addFeature(fet, QgsFeatureSink.FastInsert)
+            feedback.setProgress(int(current / source.featureCount()) * 100)
+        return {self.OUTPUT: dest_id}
