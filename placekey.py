@@ -21,7 +21,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QObject
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 # Initialize Qt resources from file resources.py
@@ -29,6 +29,7 @@ from .resources import *
 
 # Import the code for the DockWidget
 from .placekey_dockwidget import placekeyDockWidget
+from .GetMapCoordinates import GetMapCoordinates
 # Import for Processing
 from qgis.core import QgsApplication
 from placekey.placekeyProvider import placekeyProvider
@@ -78,8 +79,9 @@ class placekey:
         self.pluginIsActive = False
         self.dockwidget = None
 
+        self.getMapCoordinates = GetMapCoordinates(self.iface)
+        self.getMapCoordTool = None
 
-    # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
 
@@ -93,7 +95,6 @@ class placekey:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('placekey', message)
-
 
     def add_action(
         self,
@@ -217,13 +218,24 @@ class placekey:
         QgsApplication.processingRegistry().removeProvider(self.provider)
 
     #--------------------------------------------------------------------------
+    def setGetMapToolCoordFrom(self):
+        """ Method that is connected to the target button. Activates and deactivates map tool """
+        if self.dockwidget.toolButton.isChecked():
+            print("true FROM")
+            self.iface.mapCanvas().unsetMapTool(self.getMapCoordTool)
+            self.dockwidget.toolButton.setChecked(True)
+            return
+        if self.dockwidget.toolButton.isChecked() is False:
+            self.iface.mapCanvas().setCursor(Qt.CrossCursor)
+            self.iface.mapCanvas().setMapTool(self.getMapCoordTool)
+            self.dockwidget.toolButton.setChecked(False)
+            return
 
     def run(self):
         """Run method that loads and starts the plugin"""
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
-
             #print "** STARTING placekey"
 
             # dockwidget may not exist if:
@@ -239,4 +251,15 @@ class placekey:
             # show the dockwidget
             # TODO: fix to allow choice of dock location
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            #self.dockwidget.toolButton.clicked.connect(self.setGetMapToolCoordFrom)  
+            self.dockwidget.toolButton.setIcon(
+                QIcon(
+                    os.path.join(
+                        os.path.dirname(__file__),
+                        "target.png")))
+            self.getMapCoordTool = self.getMapCoordinates
+            self.getMapCoordTool.setButton(self.dockwidget.toolButton)
+            self.getMapCoordTool.setWidget(self.dockwidget)
+            self.iface.mapCanvas().setMapTool(self.getMapCoordTool)
+            self.dockwidget.toolButton.pressed.connect(self.setGetMapToolCoordFrom)
             self.dockwidget.show()

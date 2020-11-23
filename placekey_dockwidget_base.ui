@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>232</width>
-    <height>141</height>
+    <width>650</width>
+    <height>129</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,12 +15,65 @@
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+    <item row="0" column="3">
+     <widget class="QToolButton" name="toolButton">
+      <property name="text">
+       <string>...</string>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normaloff>../Hqgis/target.png</normaloff>../Hqgis/target.png</iconset>
+      </property>
+      <property name="checkable">
+       <bool>true</bool>
+      </property>
+      <property name="checked">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QLineEdit" name="lineEdit">
+        <property name="placeholderText">
+         <string>Placename around the captured coordinate (optional)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>Replace this QLabel
-with the desired
-plugin content.</string>
+       <string>placekey</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QComboBox" name="comboBox">
+      <item>
+       <property name="text">
+        <string>US</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>NL</string>
+       </property>
+      </item> 
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="lineEdit_2">
+      <property name="frame">
+       <bool>false</bool>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <property name="placeholderText">
+       <string>select a location on the map and a placename</string>
       </property>
      </widget>
     </item>

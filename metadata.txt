@@ -6,11 +6,11 @@
 name=Placekey Connector
 qgisMinimumVersion=3.0
 description=adds placekeys to your data
-version=0.1
+version=0.8
 author=Safegraph
 email=riccardo.klinger@gmail.com
 
-about=Reads attributes of your attribute table, tabular data and add placekeys using the placekey API.
+about=Reads attributes of your attribute table (like geometry, place, postal code, address), tabular data and adds placekeys using the placekey API. Providing you both with a dockwidget to query single places on a map and a processing step to add placekeys to multiple features of a layer at once. Get an API key at https://www.placekey.io/.
 
 tracker=https://github.com/riccardoklinger/placekey/issus
 repository=https://github.com/riccardoklinger/placekey
