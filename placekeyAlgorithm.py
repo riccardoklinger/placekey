@@ -21,7 +21,6 @@
  ***************************************************************************/
 """
 
-from collections import OrderedDict
 import traceback
 import math
 import time
@@ -38,19 +37,15 @@ from qgis.core import (Qgis,
                        QgsMapLayer,
                        QgsProcessingException,
                        QgsProcessingParameterFeatureSource,
-                       QgsProcessingParameterRasterLayer,
-                       QgsProcessingParameterNumber,
                        QgsProcessingParameterField,
-                       QgsProcessingParameterString,
-                       QgsProcessingParameterBoolean,
                        QgsCoordinateReferenceSystem,
-                       QgsProcessingParameterEnum,
                        QgsMessageLog,
                        QgsWkbTypes,
                        QgsSettings)
 from qgis.utils import iface
 import requests
 import json
+
 
 class placekeyAlgorithm(QgsProcessingAlgorithm):
 
@@ -105,20 +100,22 @@ class addPlacekey(placekeyAlgorithm):
         """This is the provired full name.
         """
         return 'Add placekey'
-    
+
     def shortHelpString(self):
         """
         Returns a localised short helper string for the algorithm. This string
-        should provide a basic description about what the algorithm does and the
-        parameters and outputs associated with it..
+        should provide a basic description about what the algorithm does and
+        the parameters and outputs associated with it..
         """
         return self.tr(
-            """This algorithm adds a placekey to your table. The placekey is defined either by a set of 
+            """This algorithm adds a placekey to your table. The placekey is
+            defined either by a set of:
             - (lat, lon) / taken from the geometry
             - (street_address, city, region, country) or
             - (street_address, region, postal_code, country)
             and a placename if needed.
-            The street_address should contain both the street name as well as the house number.
+            The street_address should contain both the street name as well as
+            the house number.
             <a href="https://docs.placekey.io/">Documentation</a>
             """)
 
@@ -130,7 +127,9 @@ class addPlacekey(placekeyAlgorithm):
             QgsProcessingParameterFeatureSource(
                 self.INPUT,
                 self.tr('Input table'),
-                [QgsProcessing.TypeFile, QgsProcessing.TypeVector, QgsProcessing.TypeVectorPoint]
+                [QgsProcessing.TypeFile,
+                 QgsProcessing.TypeVector,
+                 QgsProcessing.TypeVectorPoint]
             )
         )
         self.addParameter(
@@ -281,7 +280,9 @@ class addPlacekey(placekeyAlgorithm):
             data=json.dumps(payload)
         )
         if response.status_code == 401:
-            feedback.pushInfo("check your API key. Seems like you're unauthorized!")
+            feedback.pushInfo(
+                """check your API key. Seems like you're unauthorized!"""
+            )
             raise QgsProcessingException(
                     "invalid API key")
         if response.status_code == 429:
@@ -299,26 +300,39 @@ class addPlacekey(placekeyAlgorithm):
                     break
                 if retry == 10:
                     raise QgsProcessingException(
-                    "tried 10 times, cancelling processing")
+                        "tried 10 times, cancelling processing"
+                    )
         if response.status_code == 200:
             if "error" in response.json():
                 for entry in payload["queries"]:
-                    result.append(json.loads("""{"query_id": """ + str(entry["query_id"]) + """, "placekey": "Invalid address"}"""))
+                    result.append(json.loads(
+                        """{"query_id": """ +
+                        str(entry["query_id"]) +
+                        """, "placekey": "Invalid address"}"""))
             else:
                 for item in response.json():
                     if "placekey" in item:
                         result.append(item)
                     if "error" in item:
-                        result.append(json.loads("""{"query_id": """ + str(item["query_id"]) + """, "placekey": "Invalid address"}"""))
+                        result.append(json.loads(
+                            """{"query_id": """ +
+                            str(item["query_id"]) +
+                            """, "placekey": "Invalid address"}"""))
         if response.status_code == 400:
             try:
-                if response.json()["error"] == "All queries in batch had errors":
+                if response.json()["error"][0:2] == "All":
                     for entry in payload["queries"]:
-                        result.append(json.loads("""{"query_id": """ + str(entry["query_id"]) + """, "placekey": "Invalid address"}"""))
+                        result.append(json.loads(
+                            """{"query_id": """ +
+                            str(entry["query_id"]) +
+                            """, "placekey": "Invalid address"}"""))
             except BaseException:
                 raise QgsProcessingException(
-                    """no proper request sent. details in the python log, make sure to have a proper set off attributes. 
-                    If you're using a point layer, make sure to have valid geometries for all features! Response was: """ + response.text)
+                    """No proper request sent. Details in the python log,
+                    make sure to have a proper set off attributes.
+                    If you're using a point layer, make sure to have
+                    valid geometries for all features! Response was: """ +
+                    response.text)
 
         return result
 
@@ -353,18 +367,28 @@ class addPlacekey(placekeyAlgorithm):
             self.CountryField,
             context
         )
-        #no attributes given:
+        # no attributes given:
         if source.wkbType() in [0, 3, 4, 100]:
-            feedback.pushInfo("using a layer with no geometry. only attributes are used!")
-            if locationName == "" and cityName == "" and addressName == "" and regionName == "" and zipCode == "" and country == "" :
+            feedback.pushInfo(
+                "using a layer with no geometry. only attributes are used!"
+            )
+            if (locationName == "" and
+                cityName == "" and
+                addressName == "" and
+                regionName == "" and
+                zipCode == "" and
+                country == ""):
                 raise QgsProcessingException(
-                "Invalid set of inputs! Either provide a layer with geometry or proper attribute definitions!")
+                    """Invalid set of inputs! Either provide a layer with
+                    geometry or proper attribute definitions!"""
+                )
             if cityName == "" and zipCode == "":
                 raise QgsProcessingException(
-                "please provide either city name or postal code")
+                    "please provide either city name or postal code"
+                )
+
     def processAlgorithm(self, parameters, context, feedback):
         """checking for key"""
-        
         key = self.loadCredFunctionAlg()["key"]
         if key == "" or key is None:
             feedback.reportError("no API key found!", True)
@@ -376,16 +400,15 @@ class addPlacekey(placekeyAlgorithm):
             self.INPUT,
             context
         )
-        
         if source.wkbType() in [1004, 2004, 3004]:
             raise QgsProcessingException(
                 "MultiPoint layer are not supported!")
         if source is None:
             raise QgsProcessingException(
                 self.invalidSourceError(
-                    parameters, self.INPUT))
-        #checks for inputs needed
-        #
+                    parameters, self.INPUT
+                )
+            )
         self.inputCheck(source, parameters, context, feedback)
         """predefining the output layer"""
         fields = source.fields()
@@ -405,19 +428,20 @@ class addPlacekey(placekeyAlgorithm):
         feedback.pushInfo(
             '{} points for placekey finding'.format(
                 source.featureCount()))
-        total = 100.0 / source.featureCount() if source.featureCount() else 0
         features = source.getFeatures()
         """lining up the entries"""
         payload = {"queries": []}
         batches = []
         result = []
-        
         if source.featureCount() < 100:
             """small mode"""
             for current, feature in enumerate(features):
                 if feedback.isCanceled():
                     break
-                payload["queries"].append(self.addPayloadItem(parameters, context, feature, feedback))
+                payload["queries"].append(self.addPayloadItem(parameters,
+                                                              context,
+                                                              feature,
+                                                              feedback))
             batches.append(payload)
             result = self.getKeys(batches[0], result, key, feedback)
             print(result)
@@ -429,15 +453,24 @@ class addPlacekey(placekeyAlgorithm):
                     break
                 index += 1
                 if index % 100 != 0 and index != source.featureCount():
-                    payloadItem = self.addPayloadItem(parameters, context, feature, feedback)
+                    payloadItem = self.addPayloadItem(parameters,
+                                                      context,
+                                                      feature,
+                                                      feedback)
                     payload["queries"].append(payloadItem)
                 if index % 100 == 0:
-                    payloadItem = self.addPayloadItem(parameters, context, feature, feedback)
+                    payloadItem = self.addPayloadItem(parameters,
+                                                      context,
+                                                      feature,
+                                                      feedback)
                     payload["queries"].append(payloadItem)
                     batches.append(payload)
                     payload = {"queries": []}
                 if index == source.featureCount():
-                    payloadItem = self.addPayloadItem(parameters, context, feature, feedback)
+                    payloadItem = self.addPayloadItem(parameters,
+                                                      context,
+                                                      feature,
+                                                      feedback)
                     payload["queries"].append(payloadItem)
                     batches.append(payload)
                     payload = {"queries": []}
@@ -453,7 +486,6 @@ class addPlacekey(placekeyAlgorithm):
         features = source.getFeatures()
         feedback.pushInfo('merging source with placekeys...')
         for current, feature in enumerate(features):
-            
             if feedback.isCanceled():
                 break
             fet = QgsFeature()

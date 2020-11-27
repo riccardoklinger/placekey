@@ -21,7 +21,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QObject
+from qgis.PyQt.QtCore import (QSettings,
+                              QTranslator,
+                              QCoreApplication,
+                              Qt,
+                              QObject)
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 # Initialize Qt resources from file resources.py
@@ -74,7 +78,7 @@ class placekey:
         self.toolbar = self.iface.addToolBar(u'placekey')
         self.toolbar.setObjectName(u'placekey')
 
-        #print "** INITIALIZING placekey"
+        # print "** INITIALIZING placekey"
 
         self.pluginIsActive = False
         self.dockwidget = None
@@ -96,17 +100,16 @@ class placekey:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('placekey', message)
 
-    def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+    def add_action(self,
+                   icon_path,
+                   text,
+                   callback,
+                   enabled_flag=True,
+                   add_to_menu=True,
+                   add_to_toolbar=True,
+                   status_tip=None,
+                   whats_this=None,
+                   parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -169,7 +172,6 @@ class placekey:
 
         return action
 
-
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
@@ -179,16 +181,15 @@ class placekey:
             text=self.tr(u'Placekey'),
             callback=self.run,
             parent=self.iface.mainWindow())
-        
         # init the processing
         QgsApplication.processingRegistry().addProvider(self.provider)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
 
-        #print "** CLOSING placekey"
+        # print "** CLOSING placekey"
 
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
@@ -201,12 +202,8 @@ class placekey:
 
         self.pluginIsActive = False
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-
-        #print "** UNLOAD placekey"
-
         for action in self.actions:
             self.iface.removePluginWebMenu(
                 self.tr(u'&Placekey Connector'),
@@ -217,9 +214,11 @@ class placekey:
         # remove the processing
         QgsApplication.processingRegistry().removeProvider(self.provider)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
+
     def setGetMapToolCoordFrom(self):
-        """ Method that is connected to the target button. Activates and deactivates map tool """
+        """ Method that is connected to the target button.
+        Activates and deactivates map tool """
         if self.dockwidget.toolButton.isChecked():
             print("true FROM")
             self.iface.mapCanvas().unsetMapTool(self.getMapCoordTool)
@@ -236,12 +235,12 @@ class placekey:
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
-            #print "** STARTING placekey"
+            # print "** STARTING placekey"
 
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
-            if self.dockwidget == None:
+            if self.dockwidget is None:
                 # Create the dockwidget (after translation) and keep reference
                 self.dockwidget = placekeyDockWidget()
 
@@ -251,7 +250,6 @@ class placekey:
             # show the dockwidget
             # TODO: fix to allow choice of dock location
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
-            #self.dockwidget.toolButton.clicked.connect(self.setGetMapToolCoordFrom)  
             self.dockwidget.toolButton.setIcon(
                 QIcon(
                     os.path.join(
@@ -261,5 +259,6 @@ class placekey:
             self.getMapCoordTool.setButton(self.dockwidget.toolButton)
             self.getMapCoordTool.setWidget(self.dockwidget)
             self.iface.mapCanvas().setMapTool(self.getMapCoordTool)
-            self.dockwidget.toolButton.pressed.connect(self.setGetMapToolCoordFrom)
+            self.dockwidget.toolButton.pressed.connect(
+                self.setGetMapToolCoordFrom)
             self.dockwidget.show()
