@@ -26,7 +26,7 @@ hasProcessingProvider=no
 tags=placekey, vector, API
 
 homepage=https://github.com/riccardoklinger/placekey
-category=Web
+#category=
 icon=icon.png
 # experimental flag
 experimental=True

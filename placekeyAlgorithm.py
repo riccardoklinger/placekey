@@ -66,7 +66,7 @@ class placekeyAlgorithm(QgsProcessingAlgorithm):
         return type(self)()
 
     def group(self):
-        return "add placekey"
+        return "Add placekey"
 
     def groupId(self):
         return "addplacekey"

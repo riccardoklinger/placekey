@@ -60,7 +60,7 @@ class placekeyProvider(QgsProcessingProvider):
     def name(self):
         """This is the provired full name.
         """
-        return 'placekey'
+        return 'Placekey'
 
     def icon(self):
         """We return the default icon.

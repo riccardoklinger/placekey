@@ -164,7 +164,7 @@ class placekey:
             self.toolbar.addAction(action)
 
         if add_to_menu:
-            self.iface.addPluginToWebMenu(
+            self.iface.addPluginToMenu(
                 self.menu,
                 action)
 
@@ -205,7 +205,7 @@ class placekey:
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginWebMenu(
+            self.iface.removePluginMenu(
                 self.tr(u'&Placekey Connector'),
                 action)
             self.iface.removeToolBarIcon(action)

@@ -53,7 +53,7 @@ class managePlacekey(QgsProcessingAlgorithm):
         return type(self)()
 
     def group(self):
-        return "manage placekey API key"
+        return "Manage placekey API key"
 
     def groupId(self):
         return "managePlacekeyAPI"
@@ -86,7 +86,7 @@ class manageKeys(managePlacekey):
     def displayName(self):
         """This is the provired full name.
         """
-        return 'manage placekey API keys'
+        return 'Manage placekey API keys'
 
     def shortHelpString(self):
         """
