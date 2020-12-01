@@ -37,6 +37,7 @@ from qgis.core import (Qgis,
                        QgsMapLayer,
                        QgsProcessingException,
                        QgsProcessingParameterFeatureSource,
+                       QgsProcessingParameterMapLayer,
                        QgsProcessingParameterField,
                        QgsCoordinateReferenceSystem,
                        QgsMessageLog,
@@ -124,12 +125,14 @@ class addPlacekey(placekeyAlgorithm):
         with some other properties.
         """
         self.addParameter(
-            QgsProcessingParameterFeatureSource(
+            QgsProcessingParameterMapLayer(
                 self.INPUT,
                 self.tr('Input table'),
-                [QgsProcessing.TypeFile,
-                 QgsProcessing.TypeVector,
-                 QgsProcessing.TypeVectorPoint]
+                #[QgsProcessing.TypeFile,
+                # QgsProcessing.TypeVector,
+                # QgsProcessing.TypeVectorPoint,
+                # QgsProcessing.TypeVectorAnyGeometry,
+                # QgsProcessing.TypeMapLayer]
             )
         )
         self.addParameter(
