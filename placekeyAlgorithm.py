@@ -119,6 +119,7 @@ class addPlacekey(placekeyAlgorithm):
             the house number.
             If no lat/lon and no country is available we will default to US.
             <a href="https://docs.placekey.io/">Documentation</a>
+            Make sure to have your placekey API key added to the options using 'Manage placekey API keys"
             """)
 
     def initAlgorithm(self, config=None):

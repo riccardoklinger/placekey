@@ -1,7 +1,7 @@
 from qgis.PyQt.QtCore import Qt, QUrl
 from qgis.PyQt.QtGui import *
 from qgis.PyQt.QtWidgets import *
-from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject
+from qgis.core import Qgis, QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, QgsProcessingException
 from qgis.gui import QgsMapToolEmitPoint, QgsMapToolPan
 import requests
 from .placekeyAlgorithm import addPlacekey
@@ -34,13 +34,20 @@ class GetMapCoordinates(QgsMapToolEmitPoint):
         pt4326 = transform.transform(pt.x(), pt.y())
         lat = pt4326.y()
         lon = pt4326.x()
-        #self.getCredentials()
         # change dockwidget corrdinate with the original crs
         self.dockwidget.lineEdit_2.setText("no address found")
-        print(lat)
-        print(lon)
-        key = addPlacekey.loadCredFunctionAlg(self)["key"]
-        ### getting Plac from Input ###
+        try:
+            key = addPlacekey.loadCredFunctionAlg(self)["key"]
+            if key == "" or key is None:
+                raise QgsProcessingException(
+                    "no API key found! add one using 'Manage placekey API keys'")
+                self.dockwidget.lineEdit_2.setText("no API key found! add one using 'Manage placekey API keys'")
+                return
+        except BaseException:
+            print("no API key found! add one using 'Manage placekey API keys'")
+            self.dockwidget.lineEdit_2.setText("no API key found! add one using 'Manage placekey API keys'")
+            return
+        ### getting Placekey from Input ###
         placeText = self.dockwidget.lineEdit.text()
         country = self.dockwidget.comboBox.currentText()
         url = "https://api.placekey.io/v1/placekey"
@@ -62,8 +69,6 @@ class GetMapCoordinates(QgsMapToolEmitPoint):
             headers=headers,
             data=json.dumps(payload)
         )
-        print(response.json())
-        print(json.dumps(payload))
         self.dockwidget.lineEdit_2.setText(str(response.json()["placekey"]))
         self.dockwidget.toolButton.setChecked(False)
         self.iface.mapCanvas().setCursor(Qt.ArrowCursor)
@@ -81,5 +86,4 @@ class GetMapCoordinates(QgsMapToolEmitPoint):
            # self.dockwidget.toolButton.setChecked(False)
 
     def setWidget(self, dockwidget):
-        print(dockwidget)
         self.dockwidget = dockwidget
