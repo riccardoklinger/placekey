@@ -117,6 +117,7 @@ class addPlacekey(placekeyAlgorithm):
             and a placename if needed.
             The street_address should contain both the street name as well as
             the house number.
+            If no lat/lon and no country is available we will default to US.
             <a href="https://docs.placekey.io/">Documentation</a>
             """)
 
@@ -259,6 +260,8 @@ class addPlacekey(placekeyAlgorithm):
             item["region"] = self.valueCheck(str(feature[regionName]))
         if country != "":
             item["iso_country_code"] = self.valueCheck(str(feature[country]))
+        #if country == "":
+        #    item["iso_country_code"] = "US"
         try:
             featGeometry = feature.geometry()
             if math.isnan(featGeometry.asPoint().y()) is False:
