@@ -259,6 +259,8 @@ class addPlacekey(placekeyAlgorithm):
             item["region"] = self.valueCheck(str(feature[regionName]))
         if country != "":
             item["iso_country_code"] = self.valueCheck(str(feature[country]))
+        if country == "":
+            item["iso_country_code"] = "US"
         try:
             featGeometry = feature.geometry()
             if math.isnan(featGeometry.asPoint().y()) is False:
