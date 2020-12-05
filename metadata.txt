@@ -12,7 +12,7 @@ email=riccardo.klinger@gmail.com
 
 about=Reads attributes of your attribute table (like geometry, place, postal code, address) or tabular data and adds placekeys using the placekey API. Providing you both with a dockwidget to query single places on a map and a processing step to add placekeys to multiple features of a layer at once. Get an API key at https://www.placekey.io/.
 
-tracker=https://github.com/riccardoklinger/placekey/issus
+tracker=https://github.com/riccardoklinger/placekey/issues
 repository=https://github.com/riccardoklinger/placekey
 # End of mandatory metadata
 
