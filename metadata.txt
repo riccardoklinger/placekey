@@ -6,11 +6,11 @@
 name=Placekey Connector
 qgisMinimumVersion=3.0
 description=adds placekeys to your data
-version=0.9
+version=0.91
 author=Riccardo Klinger
 email=riccardo.klinger@gmail.com
 
-about=Reads attributes of your attribute table (like geometry, place, postal code, address) or tabular data and adds placekeys using the placekey API. Providing you both with a dockwidget to query single places on a map and a processing step to add placekeys to multiple features of a layer at once. Get an API key at https://www.placekey.io/.
+about=Reads attributes of your attribute table (like geometry, place name, and address) or tabular data and adds Placekeys using the Placekey API. Placekeys are unique place identifiers that can be used to join multiple datasets together. This plugin provides you with a dockwidget to query individual places on a map and a processing step to add Placekeys to multiple features of a layer at once. Get an API key at https://placekey.io/.
 
 tracker=https://github.com/riccardoklinger/placekey/issues
 repository=https://github.com/riccardoklinger/placekey
@@ -20,13 +20,14 @@ repository=https://github.com/riccardoklinger/placekey
 
 hasProcessingProvider=yes
 # Uncomment the following line and add your changelog:
-changelog=2020/12/05 V0.9 initial release
+changelog=2020/12/05 V0.9.1 small bugs in metadata and removal of unused data
+  2020/12/05 V0.9 initial release
 
 # Tags are comma separated with spaces allowed
 tags=placekey, vector, API
 
 homepage=https://github.com/riccardoklinger/placekey
-category=Web
+#category=Web
 icon=icon.png
 # experimental flag
 experimental=True
@@ -44,4 +45,3 @@ category=Web
 
 # If the plugin can run on QGIS Server.
 server=False
-
