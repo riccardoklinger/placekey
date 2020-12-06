@@ -37,6 +37,7 @@ from qgis.core import (Qgis,
                        QgsMapLayer,
                        QgsProcessingException,
                        QgsProcessingParameterFeatureSource,
+                       QgsProcessingParameterBoolean,
                        QgsProcessingParameterMapLayer,
                        QgsProcessingParameterField,
                        QgsCoordinateReferenceSystem,
@@ -530,10 +531,6 @@ class addPlacekey(placekeyAlgorithm):
                         fet.setAttribute(1, placekey)
                     result.pop(index)
                     break
-            
-            #fet.setAttributes(attributes)
-            #else: 
-            #    fet.setAttributes()
             sink.addFeature(fet, QgsFeatureSink.FastInsert)
             feedback.setProgress(int(current / source.featureCount()) * 100)
         return {self.OUTPUT: dest_id}
