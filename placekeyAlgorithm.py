@@ -62,6 +62,7 @@ class placekeyAlgorithm(QgsProcessingAlgorithm):
     RegionField = 'Region Name Field'
     PostalField = 'Postal Code Field'
     CountryField = 'ISO Country Code Field'
+    copyAttributes = 'Copy Attributes'
 
     def createInstance(self):
         return type(self)()
@@ -189,6 +190,12 @@ class addPlacekey(placekeyAlgorithm):
                 parentLayerParameterName=self.INPUT,
                 defaultValue="",
                 optional=True
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.copyAttributes,
+                self.tr('Copy all attributes')
             )
         )
         self.addParameter(
@@ -418,7 +425,16 @@ class addPlacekey(placekeyAlgorithm):
             )
         self.inputCheck(source, parameters, context, feedback)
         """predefining the output layer"""
+        copy = self.parameterAsString(
+            parameters,
+            self.copyAttributes,
+            context
+        )
         fields = source.fields()
+        if copy == "false": 
+            fields.clear()
+            fields.append(QgsField("origin_id", QVariant.LongLong))
+
         fields.append(QgsField("placekey", QVariant.String))
         (sink, dest_id) = self.parameterAsSink(
             parameters,
@@ -495,8 +511,10 @@ class addPlacekey(placekeyAlgorithm):
         for current, feature in enumerate(features):
             if feedback.isCanceled():
                 break
-            fet = QgsFeature()
-            attributes = feature.attributes()
+            #fet = QgsFeature()
+            fet = QgsFeature(fields)
+            if copy == "true":
+                attributes = feature.attributes()
             try:
                 fet.setGeometry(feature.geometry())
             except BaseException:
@@ -504,10 +522,18 @@ class addPlacekey(placekeyAlgorithm):
             for index in range(0, len(result)):
                 if str(result[index]["query_id"]) == str(feature.id()):
                     placekey = result[index]["placekey"]
-                    attributes.append(placekey)
+                    if copy == "true":
+                        attributes.append(placekey)
+                        fet.setAttributes(attributes)
+                    else: 
+                        fet.setAttribute(0, feature.id())
+                        fet.setAttribute(1, placekey)
                     result.pop(index)
                     break
-            fet.setAttributes(attributes)
+            
+            #fet.setAttributes(attributes)
+            #else: 
+            #    fet.setAttributes()
             sink.addFeature(fet, QgsFeatureSink.FastInsert)
             feedback.setProgress(int(current / source.featureCount()) * 100)
         return {self.OUTPUT: dest_id}
