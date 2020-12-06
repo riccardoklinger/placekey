@@ -95,7 +95,7 @@ class manageKeys(managePlacekey):
         parameters and outputs associated with it..
         """
         return self.tr(
-            """Saves the API key for using in other placekey algorithms""")
+            """Saves your Placekey API key for the use of the placekey processing. To get a free API Key, register at <a href='https://dev.placekey.io/default/register'>placekey.io</a>""")
 
     def initAlgorithm(self, config=None):
         """Here we define the inputs and output of the algorithm, along
@@ -109,7 +109,7 @@ class manageKeys(managePlacekey):
             )
         )
 
-    def processAlgorithm(self, parameters, context, progress):
+    def processAlgorithm(self, parameters, context, feedback):
         """getting the api key"""
         s = QgsSettings()
         key = self.parameterAsString(
@@ -118,5 +118,8 @@ class manageKeys(managePlacekey):
             context
         )
         s.setValue("placekey/api_key", key)
+        feedback.pushInfo(
+            """Success! Your API key was updated/saved and will be used for future placekey requests."""
+        )
         return {}
 
