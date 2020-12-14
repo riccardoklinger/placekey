@@ -53,7 +53,8 @@ class GetMapCoordinates(QgsMapToolEmitPoint):
         url = "https://api.placekey.io/v1/placekey"
         headers = {
             'apikey': key,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'user-agent': 'placekey-qgis/1.0 singleMode'
         }
         payload = {
             "query": {
@@ -69,6 +70,7 @@ class GetMapCoordinates(QgsMapToolEmitPoint):
             headers=headers,
             data=json.dumps(payload)
         )
+        print(response.text)
         self.dockwidget.lineEdit_2.setText(str(response.json()["placekey"]))
         self.dockwidget.toolButton.setChecked(False)
         self.iface.mapCanvas().setCursor(Qt.ArrowCursor)

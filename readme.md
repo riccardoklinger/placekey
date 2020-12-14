@@ -6,13 +6,18 @@ Please get yourself a placekey API key at <a href="https://www.placekey.io/">pla
 
 ## Usage
 
-Currently point layers and delimited data files (example a csv) are supported. PostgreSQL data layers should work as well. If no Latitude and Longitude is available in your layer, make sure to fill the attributes:
+Currently vector layers and delimited data files (example a csv) are supported. PostgreSQL data layers should work as well. If no Latitude and Longitude is available in your layer, make sure to fill the attributes:
 - placename
 - street name + house number
 - postcode
 - city
 - region
 - country (only US and NL are supported right now). If no country is provided, the plugin defaults it to "US".
+If you would like to drop the geomery information check "use Attributes Only" in the dialog.
+
+If you want to have all source attributes of the input dataset copied to the output, make sure to enable "Copy All Atributes".
+
+Resulting Layer will use EPSG 4326 and the centroids of input data if available.
 
 ## Support
 If you find issues, have enhancement wishes, make sure to create an issue on this repo and we will get back to you as soon as possible. If it's an option on your side, please make sure to add some minimal data example for your issue / user story

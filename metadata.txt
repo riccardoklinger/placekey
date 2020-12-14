@@ -6,7 +6,7 @@
 name=Placekey Connector
 qgisMinimumVersion=3.0
 description=adds placekeys to your data
-version=0.9.2
+version=1.0
 author=Riccardo Klinger
 email=riccardo.klinger@gmail.com
 
@@ -20,7 +20,8 @@ repository=https://github.com/riccardoklinger/placekey
 
 hasProcessingProvider=yes
 # Uncomment the following line and add your changelog:
-changelog=2020/12/06 V0.9.2 solves description and feedback for manage keys processing
+changelog= 2020/12/13 V1.0 Adds support for Polygon/Line geomtries and non 4326 layers.
+  2020/12/06 V0.9.2 solves description and feedback for manage keys processing
   2020/12/05 V0.9.1 small bugs in metadata and removal of unused data
   2020/12/05 V0.9 initial release
 
@@ -31,7 +32,7 @@ homepage=https://github.com/riccardoklinger/placekey
 #category=Web
 icon=icon.png
 # experimental flag
-experimental=True
+experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False

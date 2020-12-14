@@ -26,6 +26,7 @@ import math
 import time
 from PyQt5.QtCore import (QCoreApplication, QUrl, QVariant)
 from qgis.core import (Qgis,
+                       QgsCoordinateTransform,
                        QgsFeature,
                        QgsFeatureSink,
                        QgsFields,
@@ -64,6 +65,7 @@ class placekeyAlgorithm(QgsProcessingAlgorithm):
     PostalField = 'Postal Code Field'
     CountryField = 'ISO Country Code Field'
     copyAttributes = 'Copy Attributes'
+    DropGeo = 'Use Attributes only'
 
     def createInstance(self):
         return type(self)()
@@ -113,14 +115,23 @@ class addPlacekey(placekeyAlgorithm):
         return self.tr(
             """This algorithm adds a placekey to your table. The placekey is
             defined either by a set of:
-            - (lat, lon) / taken from the geometry
+            - (lat, lon) taken from the geometry
             - (street_address, city, region, country) or
             - (street_address, region, postal_code, country)
             and a placename if needed.
-            The street_address should contain both the street name as well as
-            the house number.
-            If no lat/lon and no country is available we will default to US.
-            <a href="https://docs.placekey.io/">Documentation</a>
+            <a href="https://docs.placekey.io/">Placekey API Documentation</a>
+            ______________
+            Parameters:
+            - Location Name Field: the name of the place / "Twin Peaks Petroleum"
+            - City Name Field: The city where the place is located / "San Francisco"
+            - Address Field: The street address of the place / "1543 Mission Street"
+            - Region Name Field: The second-level administrative region below nation for the place. In the US, this is the state / "California" or "CA"
+            - Postal Code: The postal code for the place / "94105"
+            - Country Code: The ISO 2-letter Country Code for the place. Defaults to 'US' if none given.
+            - Copy all Attributes: If checked we will copy all attributes from the input layer to the output. If false, we will only copy the feature id.
+            - Use Attributes Only: If checked we will not use lat/lon as input atributes which then will 
+
+            The output layer will be stored in EPSG 4326.
             Make sure to have your placekey API key added to the options using 'Manage placekey API keys"
             """)
 
@@ -196,13 +207,19 @@ class addPlacekey(placekeyAlgorithm):
         self.addParameter(
             QgsProcessingParameterBoolean(
                 self.copyAttributes,
-                self.tr('Copy all attributes')
+                self.tr('Copy all Attributes')
+            )
+        )
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.DropGeo,
+                self.tr('Use Attributes Only')
             )
         )
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 self.OUTPUT,
-                self.tr('Layer with placekeys')
+                self.tr('Layer with Placekeys')
             )
         )
 
@@ -221,7 +238,7 @@ class addPlacekey(placekeyAlgorithm):
         else:
             return string
 
-    def addPayloadItem(self, parameters, context, feature, feedback):
+    def addPayloadItem(self, parameters, source, context, feature, feedback):
         """getting field names"""
         locationName = self.parameterAsString(
             parameters,
@@ -253,6 +270,11 @@ class addPlacekey(placekeyAlgorithm):
             self.CountryField,
             context
         )
+        geometry = self.parameterAsString(
+            parameters,
+            self.DropGeo,
+            context
+        )
         item = {
             "query_id": str(feature.id()),
         }
@@ -271,22 +293,26 @@ class addPlacekey(placekeyAlgorithm):
             item["iso_country_code"] = self.valueCheck(str(feature[country]))
         if country == "":
             item["iso_country_code"] = "US"
-        try:
-            featGeometry = feature.geometry()
+        if geometry == "false":
+            featGeometry = feature.geometry().centroid()
+            sourceCrs = source.sourceCrs()
+            if source.sourceCrs != QgsCoordinateReferenceSystem(4326):
+                destCrs = QgsCoordinateReferenceSystem(4326)
+                tr = QgsCoordinateTransform(sourceCrs, destCrs, QgsProject.instance())
+                featGeometry.transform(tr)
             if math.isnan(featGeometry.asPoint().y()) is False:
                 item["latitude"] = featGeometry.asPoint().y()
                 item["longitude"] = featGeometry.asPoint().x()
             else:
-                print("strange geometry")
-        except BaseException:
-            test = 1
+                print("strange geometry found at feature with id " + str(feature.id()))
         return item
 
     def getKeys(self, payload, result, key, feedback):
         url = "https://api.placekey.io/v1/placekeys"
         headers = {
             'apikey': key,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'user-agent': 'placekey-qgis/1.0 batchMode'
         }
         response = requests.request(
             "POST",
@@ -382,6 +408,11 @@ class addPlacekey(placekeyAlgorithm):
             self.CountryField,
             context
         )
+        geometry = self.parameterAsString(
+            parameters,
+            self.DropGeo,
+            context
+        )
         # no attributes given:
         if source.wkbType() in [0, 3, 4, 100]:
             feedback.pushInfo(
@@ -392,12 +423,13 @@ class addPlacekey(placekeyAlgorithm):
                 addressName == "" and
                 regionName == "" and
                 zipCode == "" and
-                country == ""):
+                country == "" and geometry == "true"):
                 raise QgsProcessingException(
-                    """Invalid set of inputs! Either provide a layer with
-                    geometry or proper attribute definitions!"""
+                    """You disabled geometry. Please provide additional
+                    information like city name, zipcode and address /
+                    housenumber to conszruct the WHERE part."""
                 )
-            if cityName == "" and zipCode == "":
+            if cityName == "" and zipCode == "" and geometry == "true":
                 raise QgsProcessingException(
                     "please provide either city name or postal code"
                 )
@@ -431,6 +463,11 @@ class addPlacekey(placekeyAlgorithm):
             self.copyAttributes,
             context
         )
+        geometry = self.parameterAsString(
+            parameters,
+            self.DropGeo,
+            context
+        )
         fields = source.fields()
         if copy == "false": 
             fields.clear()
@@ -443,7 +480,7 @@ class addPlacekey(placekeyAlgorithm):
             context,
             fields,
             QgsWkbTypes.Point,
-            QgsCoordinateReferenceSystem(4326)
+            source.sourceCrs()
         )
         if sink is None:
             raise QgsProcessingException(
@@ -463,12 +500,12 @@ class addPlacekey(placekeyAlgorithm):
                 if feedback.isCanceled():
                     break
                 payload["queries"].append(self.addPayloadItem(parameters,
+                                                              source,
                                                               context,
                                                               feature,
                                                               feedback))
             batches.append(payload)
             result = self.getKeys(batches[0], result, key, feedback)
-            print(result)
         else:
             """batch mode"""
             index = 0
@@ -478,12 +515,14 @@ class addPlacekey(placekeyAlgorithm):
                 index += 1
                 if index % 100 != 0 and index != source.featureCount():
                     payloadItem = self.addPayloadItem(parameters,
+                                                      source,
                                                       context,
                                                       feature,
                                                       feedback)
                     payload["queries"].append(payloadItem)
                 if index % 100 == 0:
                     payloadItem = self.addPayloadItem(parameters,
+                                                      source,
                                                       context,
                                                       feature,
                                                       feedback)
@@ -492,6 +531,7 @@ class addPlacekey(placekeyAlgorithm):
                     payload = {"queries": []}
                 if index == source.featureCount():
                     payloadItem = self.addPayloadItem(parameters,
+                                                      source,
                                                       context,
                                                       feature,
                                                       feedback)
@@ -509,6 +549,10 @@ class addPlacekey(placekeyAlgorithm):
         '''processing result'''
         features = source.getFeatures()
         feedback.pushInfo('merging source with placekeys...')
+        if geometry == "true":
+            feedback.pushInfo('attributes used for inputs, resulting geometry is the centroid of input geometries')
+        if geometry == "false":
+            feedback.pushInfo('centroids of geometries used for inputs and resulting geomtry of placekey layer')
         for current, feature in enumerate(features):
             if feedback.isCanceled():
                 break
@@ -517,7 +561,7 @@ class addPlacekey(placekeyAlgorithm):
             if copy == "true":
                 attributes = feature.attributes()
             try:
-                fet.setGeometry(feature.geometry())
+                fet.setGeometry(feature.geometry().centroid())
             except BaseException:
                 feedback.pushInfo('no geometry available')
             for index in range(0, len(result)):
