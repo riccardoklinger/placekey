@@ -13,7 +13,7 @@ Currently vector layers and delimited data files (example a csv) are supported. 
 - city
 - region
 - country (only US and NL are supported right now). If no country is provided, the plugin defaults it to "US".
-If you would like to drop the geomery information check "use Attributes Only" in the dialog.
+If you would like to drop the geomery information check "use Attributes Only" in the dialog. Otherwise we will use point-geometries. If your layer is of type polygon/polyline, we will calculate centroids and use them as inputs for lat/lon. This will be treated as prime information on the API side, so will outrule the attribute informations (like street, zipcode and so on). 
 
 If you want to have all source attributes of the input dataset copied to the output, make sure to enable "Copy All Atributes".
 
