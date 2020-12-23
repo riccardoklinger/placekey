@@ -2,7 +2,7 @@
 
 IMPORTANT NOTE: Currently only fully supported for US-based Addresses and POIs.
 
-Placekey is designed to be a free, universal identifier for physical places. The Placekey API does the work of POI resolution, address normalization, validation, and geocoding to ensure that unique places receive unique Placekeys. Learn more at www.placekey.io.
+Placekey is designed to be a free, universal identifier for physical places. The Placekey API does the work of POI resolution, address normalization, validation, and geocoding to ensure that unique places receive unique Placekeys. Learn more at <a href="https://www.placekey.io/">placekey.io</a>.
 
 With the Placekey plugin for QGIS 3.x, you can query the map and get a Placekey for the place of your choice. Additionally, you can process different layers/files and get the Placekey for each feature using the Placekey API.
 
@@ -22,11 +22,11 @@ Placekey can help you remove duplicate rows in your dataset, even if their addre
 
 ### Evaluate Address Data Quality
 
-The Placekey API compares your address and POI data against multiple authoritative sources of truth in order to generate a unique Placekey for each place in your dataset. Overall data quality can be ascertained by appending Placekeys and looking at the match rate. 
+The Placekey API compares your address and POI data against multiple authoritative sources of truth in order to generate a unique Placekey for each place in your dataset. Overall data quality can be ascertained by appending Placekeys and looking at the match rate.
 
 
 ## Prerequesities
-Please get yourself a Placekey API key at <a href="https://www.placekey.io/">placekey.io</a>. Then use the processing step <i>processing -> placekey -> manage placekey API key</i> to save your API key in the QGIS settings.
+Please get yourself a Placekey API key at <a href="https://dev.placekey.io/default/register">placekey.io</a>. Then use the processing step <i>processing -> placekey -> manage placekey API key</i> to save your API key in the QGIS settings.
 
 ## Usage
 
@@ -48,3 +48,12 @@ Resulting Layer will use EPSG 4326 and the centroids of input data if available.
 
 ## Support
 If you find issues or have enhancement requests, make sure to create an issue on this repo and we will get back to you as soon as possible. If it's an option on your side, please make sure to add some minimal data example for your issue / user story
+
+## Additional Resources
+- <a href="https://docs.placekey.io/">Placekey API Documentation</a>
+- <a href="https://digital-geography.com/joining-data-with-the-placekey-qgis-plugin/">Digital Geography Blog</a>
+- <a href="https://www.youtube.com/watch?v=MD0khQxYaZE&feature=emb_title">Plugin Demo Video</a>
+
+## Tags
+
+address matching, poi matching, address normalization, address standardization, address verification, address validation, address parsing, address correction, company name matching, business name matching, company name normalization, company name standardization, data conflation, deduplication
