@@ -1,5 +1,29 @@
 # Placekey API Plugin
+
+IMPORTANT NOTE: Currently only fully supported for US-based Addresses and POIs.
+
+Placekey is designed to be a free, universal identifier for physical places. The Placekey API does the work of POI resolution, address normalization, validation, and geocoding to ensure that unique places receive unique Placekeys. Learn more at www.placekey.io.
+
 With the Placekey plugin for QGIS 3.x, you can query the map and get a Placekey for the place of your choice. Additionally, you can process different layers/files and get the Placekey for each feature using the Placekey API.
+
+Use this Plugin to perform the following:
+
+### Address and POI Matching
+
+If you are drawing address and/or POI-oriented data from multiple different places, Placekey allows you to match them together easily. Placekey can act as an alternative to a spatial join, letting you join on the Placekey attribute. This significantly reduces the downsides of spatial joins - these include geocodes on top of each other in apartment buildings or offices, densely-placed geocodes in urban areas, and street-level versus rooftop-level geocodings.
+
+### Address Normalization
+
+By resolving messy input address formats, Placekey removes the need to first normalize your addresses and POIs when joining them with other data. The Placekey API ensures that the same place will receive the same Placekey, even if it is referenced using multiple names and/or address conventions.
+
+### Address and POI Deduplication
+
+Placekey can help you remove duplicate rows in your dataset, even if their address and POI formats differ. Just Placekey all of your rows and drop duplicates of the Placekey attribute.
+
+### Evaluate Address Data Quality
+
+The Placekey API compares your address and POI data against multiple authoritative sources of truth in order to generate a unique Placekey for each place in your dataset. Overall data quality can be ascertained by appending Placekeys and looking at the match rate. 
+
 
 ## Prerequesities
 Please get yourself a Placekey API key at <a href="https://www.placekey.io/">placekey.io</a>. Then use the processing step <i>processing -> placekey -> manage placekey API key</i> to save your API key in the QGIS settings.
