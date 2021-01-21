@@ -6,11 +6,11 @@
 name=Placekey Connector
 qgisMinimumVersion=3.0
 description=adds placekeys to your data
-version=1.0
+version=1.1
 author=Riccardo Klinger
 email=riccardo.klinger@gmail.com
 
-about=Reads attributes of your attribute table (like geometry, place name, and address) or tabular data and adds Placekeys using the Placekey API. Placekeys are unique place identifiers that can be used to join multiple datasets together. This plugin provides you with a dockwidget to query individual places on a map and a processing step to add Placekeys to multiple features of a layer at once. Get an API key at https://placekey.io/.
+about=IMPORTANT NOTE: Currently only fully supported for Addresses and POIs based in the US and Canada.<br><br>Solve tough problems related to address matching, POI matching, address normalization, validation, deduplication, and entity resolution with the free Placekey Connector. Placekey is a free, universal identifier for physical places.<ul><li><a href="https://www.youtube.com/watch?v=MD0khQxYaZE&feature=emb_title">How to Use This Plugin (Video)</a></li><li><a href="https://www.placekey.io/blog/introducing-the-placekey-qgis-plugin">Placekey Blog</a></li><li><a href="https://docs.placekey.io/">Placekey API Documentation</a></li><li><a href="https://github.com/riccardoklinger/placekey/blob/master/readme.md">Plugin Documentation</a></li></ul><br>Use this plugin to perform the following:<br><br><b>ADDRESS AND POI MATCHING</b><br><br>If you are drawing address and/or POI-oriented data from multiple different places, Placekey allows you to match them together easily. Placekey can act as an alternative to a spatial join, letting you join on the Placekey attribute. This significantly reduces the downsides of spatial joins - these include geocodes on top of each other in apartment buildings or offices, densely-placed geocodes in urban areas, and street-level versus rooftop-level geocodings.<br><br><b>ADDRESS NORMALIZATION</b><br><br>By resolving messy input address formats, Placekey removes the need to first normalize your addresses and POIs when joining them with other data. The Placekey API ensures that the same place will receive the same Placekey, even if it is referenced using multiple names and/or address conventions.<br><br><b>ADDRESS AND POI DEDUPLICATION</b><br><br>Placekey can help you remove duplicate rows in your dataset, even if their address and POI formats differ. Just Placekey all of your rows and drop duplicates of the Placekey attribute.<br><br><b>EVALUATE ADDRESS DATA QUALITY</b><br><br>The Placekey API compares your address and POI data against multiple authoritative sources of truth in order to generate a unique Placekey for each place in your dataset. Overall data quality can be ascertained by appending Placekeys and looking at the match rate.<br><br>Learn more at <a href="https://placekey.io">Placekey.io</a>.
 
 tracker=https://github.com/riccardoklinger/placekey/issues
 repository=https://github.com/riccardoklinger/placekey
@@ -20,13 +20,14 @@ repository=https://github.com/riccardoklinger/placekey
 
 hasProcessingProvider=yes
 # Uncomment the following line and add your changelog:
-changelog= 2020/12/13 V1.0 Adds support for Polygon/Line geomtries and non 4326 layers.
+changelog= 2021/01/21 V1.1 support for Canadian POIs
+  2020/12/13 V1.0 Adds support for Polygon/Line geomtries and non 4326 layers.
   2020/12/06 V0.9.2 solves description and feedback for manage keys processing
   2020/12/05 V0.9.1 small bugs in metadata and removal of unused data
   2020/12/05 V0.9 initial release
 
 # Tags are comma separated with spaces allowed
-tags=placekey, vector, API
+tags=address correction,address matching,address normalization,address parsing,address standardization,address validation,address verification,business name matching,company name matching,company name normalization,company name standardization,data conflation,poi matching,deduplication
 
 homepage=https://github.com/riccardoklinger/placekey
 #category=Web

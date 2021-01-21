@@ -54,7 +54,7 @@
      <widget class="QComboBox" name="comboBox">
       <item>
        <property name="text">
-        <string>US</string>
+        <string>CA</string>
        </property>
       </item>
       <item>
@@ -62,6 +62,11 @@
         <string>NL</string>
        </property>
       </item> 
+      <item>
+       <property name="text">
+        <string>US</string>
+       </property>
+      </item>
      </widget>
     </item>
     <item row="1" column="1">

@@ -1,6 +1,6 @@
 # Placekey API Plugin
 
-IMPORTANT NOTE: Currently only fully supported for US-based Addresses and POIs.
+IMPORTANT NOTE: Currently only fully supported for US and Canada based Addresses and POIs.
 
 Placekey is designed to be a free, universal identifier for physical places. The Placekey API does the work of POI resolution, address normalization, validation, and geocoding to ensure that unique places receive unique Placekeys. Learn more at <a href="https://www.placekey.io/">placekey.io</a>.
 
@@ -36,7 +36,7 @@ Currently, vector layers and delimited data files (.csv) are supported. PostgreS
 - `postal_code`
 - `city`
 - `region` (which is state in the US)
-- `iso_country_code` (only `US` and `NL` are supported right now). If no country is provided, the plugin defaults it to `US`.
+- `iso_country_code` (only `US`, `CA` are supported right now). If no country is provided, the plugin defaults it to `US`.
 
 The API supports various sub-combinations of the above attributes, such as (`location_name`, `latitude`, and `longitude`), (`street_address`, `city`, and `region`), (`street_address`, `region`, and `postal_code`). For full API specifications, please see the <a href="https://docs.placekey.io/">API docs</a>.
 
